@@ -1,0 +1,39 @@
+import pandas as pd
+import numpy as np
+
+FILE_NAME_LIST = ['data111.xls', 'data112.xls', 'data113.xls']
+
+def preprocessing(data):
+    data = data[['名称', '面积']]
+    data = data.rename(columns = {'名称' : 'name', '面积' : 'area'})
+    data = data.dropna()
+    df = pd.DataFrame(data.groupby('name').sum())
+    data = df.reset_index()
+    # data.to_csv("new_data11{}.csv".format(i))
+    data = data.to_dict()
+    key_value = {}
+    for key in data['name'].keys():
+        key_value[data['name'][key]] = data['area'][key]
+    print(key_value)
+    return key_value
+
+all_data = []
+for file_name in FILE_NAME_LIST:
+    all_data.append(pd.read_excel(file_name))
+key_value_list = []
+for data in all_data:
+    key_value_list.append(preprocessing(data))
+common_key_list = key_value_list[0].keys()
+for ele in key_value_list:
+    common_key_list = list(set(common_key_list) & set(ele.keys()))
+    print("there are total {} common names".format(len(common_key_list)))
+
+result = {}
+for i in range(len(all_data)):
+    area_list = []
+    for key in common_key_list:
+        area_list.append(key_value_list[i][key])
+    result[FILE_NAME_LIST[i]] = area_list
+
+result = pd.DataFrame(result, index=common_key_list)
+result.to_csv('result.csv')
