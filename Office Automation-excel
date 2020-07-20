@@ -1,0 +1,66 @@
+# 合并Excel文件
+
+import xlrd
+import xlsxwriter
+
+
+# 打开excel文件
+def open_xls(file):
+    fh = xlrd.open_workbook('/Users/hfshzx126.com/Desktop/test20200720.xlsx')  # 打开文件file，并读取到fh中
+    return fh
+
+
+# 获取excel中所有的sheet表
+def getsheet(fh):
+    return fh.sheets()  # 获取文件fh中所有的工作表
+
+
+# 获取sheet表的行数
+def getnrows(fh, sheet):
+    table = fh.sheets()[sheet]
+    return table.nrows  # .nrows获取table表的行数
+
+
+# 按行读取文件内容并依次写入datavalue
+def getFilect(file, shnum):
+    fh = open_xls(file)  # 调用open_xls函数，打开excel文件
+    table = fh.sheets()[shnum]
+    num = table.nrows  # num表示table表的行数
+    for row in range(num):
+        rdata = table.row_values(row)  # 获取table表的第row行的数据，赋给rdata
+        datavalue.append(rdata)  # 依次将rdata添加到datavalue的末尾，每读取一行就写入一行
+    return datavalue
+
+
+# 获取fh文件中sheet表的个数
+def getshnum(fh):
+    x = 0
+    sh = getsheet(fh)
+    for sheet in sh:
+        x += 1
+    return x
+
+
+if __name__ == '__main__':
+    # 将需要合并的excel文件形成列表allxls
+    allxls = ['/Users/hfshzx126.com/Desktop/test20200720.xlsx', '/Users/hfshzx126.com/Desktop/test20200720-2.xlsx']
+    # 存储所有读取的结果
+    datavalue = []
+    for fl in allxls:  # 遍历所有需要合并的excel文件
+        fh = open_xls(fl)  # 打开excel文件
+        x = getshnum(fh)  # 获取文件中sheet表的个数
+        for shnum in range(x):  # 遍历当前excel文件的所有sheet表
+            print("正在读取文件：" + str(fl) + "的第" + str(shnum) + "个sheet表的内容...")  # 提示进度
+            rvalue = getFilect(fl, shnum)  # 将从当前sheet表中读取的所有数据写入rvalue
+    # 定义最终合并后生成的新文件
+    endfile = '/Users/hfshzx126.com/Desktop/result20200720.xlsx'  # 合并文件所处的位置与定义文件名
+    wb1 = xlsxwriter.Workbook(endfile)
+    # 创建一个sheet工作对象
+    ws = wb1.add_worksheet()
+    # 遍历rvalue中的所有单元格，并将读取的单元格的值写入合并后的文件中
+    for a in range(len(rvalue)):  # 遍历rvalue所有行
+        for b in range(len(rvalue[a])):  # 遍历rvalue的第a行的所有列，即实现所有单元格的遍历
+            c = rvalue[a][b]  # 获取第a行第b列的值
+            ws.write(a, b, c)  # 将第a行第b列的值c写入ws
+    wb1.close()  # 写入完成后关闭excel文件
+    print("\n文件合并完成！！！\nExcel文件所处位置：" + str(endfile))  # 提示合并结束
